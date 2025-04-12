@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
+    <ProjectReference Include="..\CodeGenPlayground.Builders\CodeGenPlayground.Builders.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
   </ItemGroup>
 
 </Project>

@@ -3,10 +3,12 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <OutputType>Library</OutputType>
+    <LangVersion>12</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
