@@ -1,4 +1,4 @@
-namespace CodeGenPlayground.Tests;
+namespace CodeGenPlayground;
 
 public abstract class BuilderBase<T, TBuilder> where TBuilder : BuilderBase<T, TBuilder>
 {

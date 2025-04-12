@@ -1,4 +1,4 @@
-namespace CodeGenPlayground.Tests;
+namespace CodeGenPlayground;
 
 public class Customer
 {

@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
-namespace CodeGenPlayground.Tests;
+namespace CodeGenPlayground;
 
 [Generator]
 public class BuilderGenerator : IIncrementalGenerator
@@ -32,9 +33,23 @@ public class BuilderGenerator : IIncrementalGenerator
                         }
                         currentType = currentType.BaseType;
                     }
+
+                    var isPartial = namedTypeSymbol.DeclaringSyntaxReferences
+                        .Any(reference =>
+                        {
+                            var syntaxNode = reference.GetSyntax();
+                            if (syntaxNode is not Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax
+                                classDeclarationSyntax)
+                                return false;
+                            return classDeclarationSyntax.Modifiers.Any(modifier =>
+                                modifier.IsKind(SyntaxKind.PartialKeyword));
+                        });
+
+                    if (!isPartial)
+                        continue;
                     
                     
-                    
+
                 }
                 
                 // Grab the values from Compilation and CompilationOptions
