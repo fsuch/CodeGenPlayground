@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenPlayground", "CodeGe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenPlayground.Builders", "CodeGenPlayground.Builders\CodeGenPlayground.Builders.csproj", "{49008FAE-E589-47A6-A6E4-2F5B72B14C3B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenPlayground.Tests", "CodeGenPlayground.Tests\CodeGenPlayground.Tests.csproj", "{001F19F1-618D-45AA-83CA-2CE413911C99}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{49008FAE-E589-47A6-A6E4-2F5B72B14C3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49008FAE-E589-47A6-A6E4-2F5B72B14C3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49008FAE-E589-47A6-A6E4-2F5B72B14C3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{001F19F1-618D-45AA-83CA-2CE413911C99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{001F19F1-618D-45AA-83CA-2CE413911C99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{001F19F1-618D-45AA-83CA-2CE413911C99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{001F19F1-618D-45AA-83CA-2CE413911C99}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
