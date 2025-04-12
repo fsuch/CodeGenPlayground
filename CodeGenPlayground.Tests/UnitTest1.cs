@@ -12,7 +12,7 @@ public class Customer
     public string Id { get; set; }
     public string Name { get; set; }
     public DateOnly DateOfBirth { get; set; }
-    public List<Account> Accounts { get; set; }>
+    public List<Account> Accounts { get; set; }
 }
 
 public class Account
@@ -24,12 +24,4 @@ public class Account
 
 public partial class CustomerBuilder : BuilderBase<Customer, CustomerBuilder>{
 
-}
-
-public class UnitTest1
-{
-    [Fact]
-    public void Test1()
-    {
-    }
 }
