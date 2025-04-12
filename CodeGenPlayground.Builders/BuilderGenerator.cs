@@ -81,7 +81,7 @@ public class BuilderGenerator : IIncrementalGenerator
             {
                 var descriptor = new DiagnosticDescriptor(
                     "GEN001", "Generator Ran", "The generator executed successfully", "SourceGenerator",
-                    DiagnosticSeverity.Error, true);
+                    DiagnosticSeverity.Warning, true);
                 sourceProductionContext.ReportDiagnostic(Diagnostic.Create(descriptor, Location.None));
             });
 
