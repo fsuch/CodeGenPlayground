@@ -11,4 +11,8 @@
     <ProjectReference Include="..\CodeGenPlayground.Builders\CodeGenPlayground.Builders.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
   </ItemGroup>
 
+<!--  <ItemGroup>-->
+<!--    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.13.0" PrivateAssets="all" />-->
+<!--  </ItemGroup>-->
+
 </Project>
