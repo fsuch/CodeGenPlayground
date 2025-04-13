@@ -27,7 +27,7 @@ public class BuilderGenerator : IIncrementalGenerator
                         return null;
 
                     var modelClass = (INamedTypeSymbol)builderBaseClass.TypeArguments[0];
-                    var modelProperties = modelClass.GetProperties();
+                    var modelProperties = modelClass.GetPublicPropertiesWithSetMethod();
 
                     var builderDefinition = new BuilderDefinition
                     {
@@ -35,7 +35,9 @@ public class BuilderGenerator : IIncrementalGenerator
                         BuilderNamespace = builderClass.GetFullNamespace(),
                         Properties = modelProperties
                             .Select(BuilderDefinition.PropertyDefinition.FromPropertySymbol)
-                            .ToArray()
+                            .ToArray(),
+                        Methods = builderClass.GetAllMethods()
+                            .Select(BuilderDefinition.MethodDefinition.FromMethodSymbol).ToArray()
                     };
                     return builderDefinition;
                 }
@@ -52,10 +54,14 @@ public class BuilderGenerator : IIncrementalGenerator
                       """;
                 foreach (var property in builderDefinition.Properties.OrderBy(property => property.Name))
                 {
+                    var methodName = $"With{property.Name}";
+                    if (MethodWithDefinitionAlreadyExists(methodName, builderDefinition, property))
+                        continue;
+
                     var propertyType = GetPropertyType(property.Type);
 
                     source += $$"""
-                                public {{builderDefinition.BuilderName}} With{{property.Name}}({{propertyType}} value)
+                                public {{builderDefinition.BuilderName}} {{methodName}}({{propertyType}} value)
                                     {
                                         Instance.{{property.Name}} = value;
                                         return this;
@@ -68,7 +74,7 @@ public class BuilderGenerator : IIncrementalGenerator
                 sourceProductionContext.AddSource($"{builderDefinition.BuilderName}.g.cs", source);
                 return;
 
-                string GetPropertyType(BuilderDefinition.TypeDefinition type)
+                static string GetPropertyType(BuilderDefinition.TypeDefinition type)
                 {
                     if (type.IsArray)
                         return $"{GetPropertyType(type.TypeArguments.Single())}[]";
@@ -77,6 +83,14 @@ public class BuilderGenerator : IIncrementalGenerator
                         return $"{type.FullName}<{string.Join(", ", type.TypeArguments.Select(GetPropertyType))}>";
 
                     return type.FullName;
+                }
+
+                static bool MethodWithDefinitionAlreadyExists(string methodName, BuilderDefinition builderDefinition,
+                    BuilderDefinition.PropertyDefinition property)
+                {
+                    return builderDefinition.Methods.Where(method => method.Name == methodName).Any(methodDefinition =>
+                        methodDefinition.Parameters.Length == 1 &&
+                        methodDefinition.Parameters[0].FullName == property.Type.FullName);
                 }
             });
     }

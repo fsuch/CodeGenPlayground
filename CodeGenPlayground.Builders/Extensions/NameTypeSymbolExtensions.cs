@@ -17,14 +17,4 @@ internal static class NameTypeSymbolExtensions
 
         return null;
     }
-
-
-    internal static IPropertySymbol[] GetProperties(this INamedTypeSymbol symbol)
-    {
-        return symbol
-            .GetMembers()
-            .OfType<IPropertySymbol>()
-            .Where(p => p.DeclaredAccessibility == Accessibility.Public && !p.IsStatic)
-            .ToArray();
-    }
 }

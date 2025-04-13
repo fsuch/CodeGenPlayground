@@ -9,6 +9,7 @@ internal class BuilderDefinition
     public string BuilderName { get; set; }
     public string BuilderNamespace { get; set; }
     public PropertyDefinition[] Properties { get; set; }
+    public MethodDefinition[] Methods { get; set; } 
     
     internal class PropertyDefinition
     {
@@ -57,6 +58,21 @@ internal class BuilderDefinition
                 IsNullable = type.IsNullable(),
                 TypeArguments = typeArguments,
                 IsArray = isArray
+            };
+        }
+    }
+
+    internal class MethodDefinition
+    {
+        public string Name { get; set; }
+        public TypeDefinition[] Parameters { get; set; }
+
+        internal static MethodDefinition FromMethodSymbol(IMethodSymbol method)
+        {
+            return new MethodDefinition
+            {
+                Name = method.Name,
+                Parameters = method.Parameters.Select(parameter => TypeDefinition.FromTypeSymbol(parameter.Type)).ToArray(),
             };
         }
     }
