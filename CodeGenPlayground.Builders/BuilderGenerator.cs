@@ -36,15 +36,30 @@ public class BuilderGenerator : IIncrementalGenerator
                         BuilderNamespace = builderClass.GetFullNamespace(),
                         Properties = modelProperties.Select(property =>
                         {
-                            var typeIsNullable = property.Type.IsNullable();
-                            var propertyType = typeIsNullable ? property.Type.GetElementType() : property.Type;
+                            var originalPropertyType = property.Type;
+
+                            var propertyType = originalPropertyType;
+                            var isEnumerable = originalPropertyType.IsEnumerable();
+                            var enumerableType = default(string);
+                            if (isEnumerable)
+                            {
+                                propertyType = originalPropertyType.GetElementType();
+                                enumerableType =
+                                    $"{originalPropertyType.GetFullNamespace()}.{originalPropertyType.Name}";
+                            }
+
+                            var typeIsNullable = propertyType.IsNullable();
+                            propertyType = typeIsNullable ? propertyType.GetElementType() : propertyType;
+
                             var propertyDefinition = new BuilderDefinition.PropertyDefinition
                             {
                                 Name = property.Name,
                                 Namespace = property.GetFullNamespace(),
                                 Type = propertyType.Name,
                                 TypeNamespace = propertyType.GetFullNamespace(),
-                                TypeIsNullable = typeIsNullable
+                                TypeIsNullable = typeIsNullable,
+                                IsEnumerable = isEnumerable,
+                                EnumerableType = enumerableType
                             };
                             return propertyDefinition;
                         }).ToArray()
@@ -82,7 +97,13 @@ public class BuilderGenerator : IIncrementalGenerator
 
                 string GetPropertyType(BuilderDefinition.PropertyDefinition property)
                 {
-                    return $"{property.TypeNamespace}.{property.Type}{(property.TypeIsNullable ? "?" : "")}";
+                    var propertyType =
+                        $"{property.TypeNamespace}.{property.Type}{(property.TypeIsNullable ? "?" : "")}";
+
+                    if (property.IsEnumerable)
+                        return $"{property.EnumerableType}<{propertyType}>";
+
+                    return propertyType;
                 }
             });
     }

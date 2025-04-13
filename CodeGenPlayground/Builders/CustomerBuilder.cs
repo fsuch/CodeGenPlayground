@@ -6,6 +6,6 @@ public partial class CustomerBuilder : BuilderBase<Customer, CustomerBuilder>
 {
     public CustomerBuilder WithRandomIdAndName()
     {
-        return WithId(Guid.NewGuid().ToString()).WithName(Guid.NewGuid().ToString());
+        return WithId(Guid.NewGuid().ToString()).WithName(Guid.NewGuid().ToString()).WithAccounts([]);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using System.Linq;
 
 namespace CodeGenPlayground.Builders.Extensions;
 
@@ -18,5 +19,22 @@ internal static class TypeSymbolExtensions
             return true;
 
         return false;
+    }
+
+    internal static bool IsEnumerable(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol == null)
+            return false;
+
+        if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
+            return false;
+
+        if (namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_String)
+            return false;
+
+        if (namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Collections_IEnumerable)
+            return true;
+
+        return typeSymbol.AllInterfaces.Any(i => i.IsEnumerable());
     }
 }

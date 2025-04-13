@@ -6,5 +6,5 @@ public class Customer
     public string Name { get; set; }
 
     public DateOnly DateOfBirth { get; set; }
-    // public List<Account> Accounts { get; set; } // TODO Implement generics support
+    public List<Account> Accounts { get; set; }
 }

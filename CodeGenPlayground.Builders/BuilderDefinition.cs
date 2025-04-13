@@ -13,5 +13,7 @@ internal class BuilderDefinition
         public string Type { get; set; }
         public string TypeNamespace { get; set; }
         public bool TypeIsNullable { get; set; }
+        public bool IsEnumerable { get; set; }
+        public string EnumerableType { get; set; }
     }
 }
