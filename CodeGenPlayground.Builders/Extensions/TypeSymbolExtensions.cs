@@ -43,4 +43,9 @@ internal static class TypeSymbolExtensions
     {
         return typeSymbol is INamedTypeSymbol namedTypeSymbol ? namedTypeSymbol.TypeArguments : [];
     }
+
+    internal static bool IsArray(this ITypeSymbol typeSymbol)
+    {
+        return typeSymbol is IArrayTypeSymbol;
+    }
 }

@@ -33,7 +33,8 @@ public class BuilderGenerator : IIncrementalGenerator
                     {
                         BuilderName = builderClass.Name,
                         BuilderNamespace = builderClass.GetFullNamespace(),
-                        Properties = modelProperties.Select(BuilderDefinition.PropertyDefinition.FromPropertySymbol)
+                        Properties = modelProperties
+                            .Select(BuilderDefinition.PropertyDefinition.FromPropertySymbol)
                             .ToArray()
                     };
                     return builderDefinition;
@@ -69,6 +70,9 @@ public class BuilderGenerator : IIncrementalGenerator
 
                 string GetPropertyType(BuilderDefinition.TypeDefinition type)
                 {
+                    if (type.IsArray)
+                        return $"{GetPropertyType(type.TypeArguments.Single())}[]";
+
                     if (type.TypeArguments.Length > 0)
                         return $"{type.FullName}<{string.Join(", ", type.TypeArguments.Select(GetPropertyType))}>";
 
