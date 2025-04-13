@@ -1,4 +1,4 @@
-namespace CodeGenPlayground;
+namespace CodeGenPlayground.Models;
 
 public class Customer
 {

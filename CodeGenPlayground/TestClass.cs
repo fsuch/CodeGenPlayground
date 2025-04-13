@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CodeGenPlayground
-{
-    public class TestClass
-    {
-        public string Foo = GeneratorDebug.Marker.Message;
-
-        public void Bar()
-        {
-            var builder = new CustomerBuilder();
-            builder.Foo();
-        }
-        
-    }
-}
+﻿// using System;
+// using System.Collections.Generic;
+// using System.Linq;
+// using System.Text;
+// using System.Threading.Tasks;
+//
+// namespace CodeGenPlayground
+// {
+//     public class TestClass
+//     {
+//         public string Foo = GeneratorDebug.Marker.Message;
+//
+//         public void Bar()
+//         {
+//             var builder = new CustomerBuilder();
+//             builder.Foo();
+//         }
+//         
+//     }
+// }
