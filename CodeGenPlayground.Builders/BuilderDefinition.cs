@@ -9,8 +9,8 @@ internal class BuilderDefinition
     public string BuilderName { get; set; }
     public string BuilderNamespace { get; set; }
     public PropertyDefinition[] Properties { get; set; }
-    public MethodDefinition[] Methods { get; set; } 
-    
+    public MethodDefinition[] Methods { get; set; }
+
     internal class PropertyDefinition
     {
         public string Name { get; set; }
@@ -31,11 +31,22 @@ internal class BuilderDefinition
     internal class TypeDefinition
     {
         public string Name { get; set; }
+        public string[] ContainingTypeNames { get; set; }
         public string Namespace { get; set; }
         public bool IsNullable { get; set; }
         public bool IsArray { get; set; }
         public TypeDefinition[] TypeArguments { get; set; }
-        public string FullName => $"{Namespace}.{Name}";
+
+        public string FullName
+        {
+            get
+            {
+                if (ContainingTypeNames.Length > 0)
+                    return $"{Namespace}.{string.Join(".", ContainingTypeNames)}.{Name}";
+
+                return $"{Namespace}.{Name}";
+            }
+        }
 
         internal static TypeDefinition FromTypeSymbol(ITypeSymbol type)
         {
@@ -57,7 +68,8 @@ internal class BuilderDefinition
                 Namespace = type.GetFullNamespace(),
                 IsNullable = type.IsNullable(),
                 TypeArguments = typeArguments,
-                IsArray = isArray
+                IsArray = isArray,
+                ContainingTypeNames = type.GetContainingTypes().Select(containingType => containingType.Name).ToArray()
             };
         }
     }
@@ -72,7 +84,8 @@ internal class BuilderDefinition
             return new MethodDefinition
             {
                 Name = method.Name,
-                Parameters = method.Parameters.Select(parameter => TypeDefinition.FromTypeSymbol(parameter.Type)).ToArray(),
+                Parameters = method.Parameters.Select(parameter => TypeDefinition.FromTypeSymbol(parameter.Type))
+                    .ToArray()
             };
         }
     }

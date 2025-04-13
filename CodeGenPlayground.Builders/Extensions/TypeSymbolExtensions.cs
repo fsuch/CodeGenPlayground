@@ -66,4 +66,27 @@ internal static class TypeSymbolExtensions
             .Where(p => p.DeclaredAccessibility == Accessibility.Public && !p.IsStatic)
             .ToArray();
     }
+
+    internal static ITypeSymbol[] GetContainingTypes(this ITypeSymbol typeSymbol)
+    {
+        return typeSymbol.GetContainingTypes(true);
+    }
+
+    private static ITypeSymbol[] GetContainingTypes(this ITypeSymbol typeSymbol, bool excludeCallingType)
+    {
+        if (typeSymbol is INamedTypeSymbol { TypeKind: TypeKind.Class or TypeKind.Interface } namedType)
+        {
+            if (namedType.ContainingType != null)
+            {
+                if (excludeCallingType)
+                    return [..GetContainingTypes(namedType.ContainingType, false)];
+
+                return [..GetContainingTypes(namedType.ContainingType, false), namedType];
+            }
+
+            return excludeCallingType ? [] : [namedType];
+        }
+
+        return [];
+    }
 }
