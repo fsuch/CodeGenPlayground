@@ -23,7 +23,7 @@ internal static class NamespaceSymbolExtensions
 
 internal static class NameTypeSymbolExtensions
 {
-    internal static string GetFullNamespace(this INamedTypeSymbol symbol)
+    internal static string GetFullNamespace(this ISymbol symbol)
     {
         return string.Join(".", symbol.ContainingNamespace.GetFullNamespaceArray());
     }
@@ -52,5 +52,14 @@ internal static class NameTypeSymbolExtensions
 
                 return classDeclarationSyntax.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.PartialKeyword));
             });
+    }
+
+    internal static IPropertySymbol[] GetProperties(this INamedTypeSymbol symbol)
+    {
+        return symbol
+            .GetMembers()
+            .OfType<IPropertySymbol>()
+            .Where(p => p.DeclaredAccessibility == Accessibility.Public && !p.IsStatic)
+            .ToArray();
     }
 }

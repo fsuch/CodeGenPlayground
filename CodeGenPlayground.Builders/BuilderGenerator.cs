@@ -20,64 +20,66 @@ public class BuilderGenerator : IIncrementalGenerator
         IncrementalValuesProvider<BuilderDefinition> valueProvider = context.SyntaxProvider
             .CreateSyntaxProvider(
             predicate: static (node, _) => node is ClassDeclarationSyntax,
-            // {
-            //     if (node is ClassDeclarationSyntax classDeclarationSyntax)
-            //     {
-            //         context.Seman
-            //         var isBuilder = classDeclarationSyntax.BaseList;
-            //         return false;
-            //     }
-            //     return false;
-            // },
             transform: (generatorSyntaxContext, _) =>
             {
                 var classDeclarationSyntax = (ClassDeclarationSyntax)generatorSyntaxContext.Node;
-                var classSymbol = generatorSyntaxContext.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax)!;
+                var builderClass = generatorSyntaxContext.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax)!;
 
-                var baseBuilderSymbol = classSymbol.GetBuilderBaseClassSymbol();
-                if (baseBuilderSymbol == null)
+                if (!builderClass.IsPartialClass())
                     return null;
+
+                var builderBaseClass = builderClass.GetBuilderBaseClassSymbol();
+                if (builderBaseClass == null)
+                    return null;
+
+                var modelClass = (INamedTypeSymbol)builderBaseClass.TypeArguments[0];
+                var modelProperties = modelClass.GetProperties();
                 
-                var isPartial = classSymbol.DeclaringSyntaxReferences
-                    .Any(reference =>
-                    {
-                        var syntaxNode = reference.GetSyntax();
-                        if (syntaxNode is not ClassDeclarationSyntax)
-                            return false;
-
-                        return classDeclarationSyntax.Modifiers.Any(modifier =>
-                            modifier.IsKind(SyntaxKind.PartialKeyword));
-                    });
-
-                if (!isPartial)
-                    return null;
-
-
+                
                 var builderDefinition = new BuilderDefinition
                 {
-                    BuilderName = classSymbol.Name,
-                    BuilderNamespace = classSymbol.GetFullNamespace()
-                };  
+                    BuilderName = builderClass.Name,
+                    BuilderNamespace = builderClass.GetFullNamespace(),
+                    Properties = modelProperties.Select(property =>
+                    {
+                        var propertyDefinition = new BuilderDefinition.PropertyDefinition
+                        {
+                            Name = property.Name,
+                            Namespace = property.GetFullNamespace(),
+                            Type = property.Type.Name,
+                            TypeNamespace = property.Type.GetFullNamespace()
+                        };
+                        return propertyDefinition;
+                    }).ToArray()
+                };
                 return builderDefinition;
-                // var a = context.CompilationProvider.Select((c, _) =>
-                // {
-                //     return new BuilderDefinition();
-                // });
-                return new BuilderDefinition();
             }
         ).Where(x => x != null);
         
         context.RegisterSourceOutput(valueProvider,
             static (sourceProductionContext, builderDefinition) =>
             {
-                              var  source = 
-                  $$"""
-                    namespace {{builderDefinition.BuilderNamespace}} {
-                         public partial class {{builderDefinition.BuilderName}} {
-                             public string Foo() => "This is a test";
-                         }
-                     }
-                    """;
+                var source =
+                    $$"""
+                      namespace {{builderDefinition.BuilderNamespace}};
+                      public partial class {{builderDefinition.BuilderName}} {
+                      
+                      """;
+                foreach (var property in builderDefinition.Properties.OrderBy(property => property.Name))
+                {
+                    var propertyType = $"{property.TypeNamespace}.{property.Type}";
+                    
+                    source += $$"""
+                              public {{builderDefinition.BuilderName}} With{{property.Name}}({{propertyType}} value)
+                                  {
+                                      Instance.{{property.Name}} = value;
+                                      return this;
+                                  }
+                                  
+                              """;
+                }
+                
+            source += "    }";
               sourceProductionContext.AddSource($"{builderDefinition.BuilderName}.g.cs", source);
             });
             
