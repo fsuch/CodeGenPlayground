@@ -13,43 +13,46 @@ public class BuilderGenerator : IIncrementalGenerator
     {
         var valueProvider = context.SyntaxProvider
             .CreateSyntaxProvider(
-            predicate: static (node, _) => node is ClassDeclarationSyntax,
-            transform: (generatorSyntaxContext, _) =>
-            {
-                var classDeclarationSyntax = (ClassDeclarationSyntax)generatorSyntaxContext.Node;
-                var builderClass = generatorSyntaxContext.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax)!;
-
-                if (!builderClass.IsPartialClass())
-                    return null;
-
-                var builderBaseClass = builderClass.GetBuilderBaseClassSymbol();
-                if (builderBaseClass == null)
-                    return null;
-
-                var modelClass = (INamedTypeSymbol)builderBaseClass.TypeArguments[0];
-                var modelProperties = modelClass.GetProperties();
-                
-                
-                var builderDefinition = new BuilderDefinition
+                static (node, _) => node is ClassDeclarationSyntax,
+                (generatorSyntaxContext, _) =>
                 {
-                    BuilderName = builderClass.Name,
-                    BuilderNamespace = builderClass.GetFullNamespace(),
-                    Properties = modelProperties.Select(property =>
+                    var classDeclarationSyntax = (ClassDeclarationSyntax)generatorSyntaxContext.Node;
+                    var builderClass = generatorSyntaxContext.SemanticModel.GetDeclaredSymbol(classDeclarationSyntax)!;
+
+                    if (!builderClass.IsPartialClass())
+                        return null;
+
+                    var builderBaseClass = builderClass.GetBuilderBaseClassSymbol();
+                    if (builderBaseClass == null)
+                        return null;
+
+                    var modelClass = (INamedTypeSymbol)builderBaseClass.TypeArguments[0];
+                    var modelProperties = modelClass.GetProperties();
+
+
+                    var builderDefinition = new BuilderDefinition
                     {
-                        var propertyDefinition = new BuilderDefinition.PropertyDefinition
+                        BuilderName = builderClass.Name,
+                        BuilderNamespace = builderClass.GetFullNamespace(),
+                        Properties = modelProperties.Select(property =>
                         {
-                            Name = property.Name,
-                            Namespace = property.GetFullNamespace(),
-                            Type = property.Type.Name,
-                            TypeNamespace = property.Type.GetFullNamespace()
-                        };
-                        return propertyDefinition;
-                    }).ToArray()
-                };
-                return builderDefinition;
-            }
-        ).Where(x => x != null);
-        
+                            var typeIsNullable = property.Type.IsNullable();
+                            var propertyType = typeIsNullable ? property.Type.GetElementType() : property.Type;
+                            var propertyDefinition = new BuilderDefinition.PropertyDefinition
+                            {
+                                Name = property.Name,
+                                Namespace = property.GetFullNamespace(),
+                                Type = propertyType.Name,
+                                TypeNamespace = propertyType.GetFullNamespace(),
+                                TypeIsNullable = typeIsNullable
+                            };
+                            return propertyDefinition;
+                        }).ToArray()
+                    };
+                    return builderDefinition;
+                }
+            ).Where(x => x != null);
+
         context.RegisterSourceOutput(valueProvider,
             static (sourceProductionContext, builderDefinition) =>
             {
@@ -57,24 +60,30 @@ public class BuilderGenerator : IIncrementalGenerator
                     $$"""
                       namespace {{builderDefinition.BuilderNamespace}};
                       public partial class {{builderDefinition.BuilderName}} {
-                      
+
                       """;
                 foreach (var property in builderDefinition.Properties.OrderBy(property => property.Name))
                 {
-                    var propertyType = $"{property.TypeNamespace}.{property.Type}";
-                    
+                    var propertyType = GetPropertyType(property);
+
                     source += $$"""
-                              public {{builderDefinition.BuilderName}} With{{property.Name}}({{propertyType}} value)
-                                  {
-                                      Instance.{{property.Name}} = value;
-                                      return this;
-                                  }
-                                  
-                              """;
+                                public {{builderDefinition.BuilderName}} With{{property.Name}}({{propertyType}} value)
+                                    {
+                                        Instance.{{property.Name}} = value;
+                                        return this;
+                                    }
+                                    
+                                """;
                 }
-                
+
                 source += "}";
                 sourceProductionContext.AddSource($"{builderDefinition.BuilderName}.g.cs", source);
+                return;
+
+                string GetPropertyType(BuilderDefinition.PropertyDefinition property)
+                {
+                    return $"{property.TypeNamespace}.{property.Type}{(property.TypeIsNullable ? "?" : "")}";
+                }
             });
     }
 }

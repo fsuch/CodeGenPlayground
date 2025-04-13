@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using CSharpExtensions = Microsoft.CodeAnalysis.CSharpExtensions;
 
 namespace CodeGenPlayground.Builders.Extensions;
 
@@ -12,7 +11,7 @@ internal static class SymbolExtensions
     {
         return string.Join(".", symbol.ContainingNamespace.GetFullNamespaceArray());
     }
-    
+
     internal static bool IsPartialClass(this ISymbol symbol)
     {
         return symbol.DeclaringSyntaxReferences
@@ -22,7 +21,16 @@ internal static class SymbolExtensions
                 if (syntaxNode is not ClassDeclarationSyntax classDeclarationSyntax)
                     return false;
 
-                return classDeclarationSyntax.Modifiers.Any(modifier => CSharpExtensions.IsKind((SyntaxToken)modifier, SyntaxKind.PartialKeyword));
+                return classDeclarationSyntax.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.PartialKeyword));
             });
+    }
+
+
+    internal static ITypeSymbol GetElementType(this ISymbol symbol)
+    {
+        if (symbol is not INamedTypeSymbol namedTypeSymbol)
+            return null;
+
+        return namedTypeSymbol.TypeArguments.Length == 0 ? null : namedTypeSymbol.TypeArguments[0];
     }
 }

@@ -12,5 +12,6 @@ internal class BuilderDefinition
         public string Namespace { get; set; }
         public string Type { get; set; }
         public string TypeNamespace { get; set; }
+        public bool TypeIsNullable { get; set; }
     }
 }

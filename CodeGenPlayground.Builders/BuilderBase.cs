@@ -4,5 +4,8 @@ public abstract class BuilderBase<T, TBuilder> where TBuilder : BuilderBase<T, T
 {
     protected T Instance { get; private set; }
 
-    public T Build() => Instance;
+    public T Build()
+    {
+        return Instance;
+    }
 }
