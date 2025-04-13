@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using System.Linq;
 
 namespace CodeGenPlayground.Builders.Extensions;
@@ -36,5 +37,10 @@ internal static class TypeSymbolExtensions
             return true;
 
         return typeSymbol.AllInterfaces.Any(i => i.IsEnumerable());
+    }
+
+    internal static ImmutableArray<ITypeSymbol> GetTypeArguments(this ITypeSymbol typeSymbol)
+    {
+        return typeSymbol is INamedTypeSymbol namedTypeSymbol ? namedTypeSymbol.TypeArguments : [];
     }
 }

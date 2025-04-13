@@ -29,40 +29,12 @@ public class BuilderGenerator : IIncrementalGenerator
                     var modelClass = (INamedTypeSymbol)builderBaseClass.TypeArguments[0];
                     var modelProperties = modelClass.GetProperties();
 
-
                     var builderDefinition = new BuilderDefinition
                     {
                         BuilderName = builderClass.Name,
                         BuilderNamespace = builderClass.GetFullNamespace(),
-                        Properties = modelProperties.Select(property =>
-                        {
-                            var originalPropertyType = property.Type;
-
-                            var propertyType = originalPropertyType;
-                            var isEnumerable = originalPropertyType.IsEnumerable();
-                            var enumerableType = default(string);
-                            if (isEnumerable)
-                            {
-                                propertyType = originalPropertyType.GetElementType();
-                                enumerableType =
-                                    $"{originalPropertyType.GetFullNamespace()}.{originalPropertyType.Name}";
-                            }
-
-                            var typeIsNullable = propertyType.IsNullable();
-                            propertyType = typeIsNullable ? propertyType.GetElementType() : propertyType;
-
-                            var propertyDefinition = new BuilderDefinition.PropertyDefinition
-                            {
-                                Name = property.Name,
-                                Namespace = property.GetFullNamespace(),
-                                Type = propertyType.Name,
-                                TypeNamespace = propertyType.GetFullNamespace(),
-                                TypeIsNullable = typeIsNullable,
-                                IsEnumerable = isEnumerable,
-                                EnumerableType = enumerableType
-                            };
-                            return propertyDefinition;
-                        }).ToArray()
+                        Properties = modelProperties.Select(BuilderDefinition.PropertyDefinition.FromPropertySymbol)
+                            .ToArray()
                     };
                     return builderDefinition;
                 }
@@ -79,7 +51,7 @@ public class BuilderGenerator : IIncrementalGenerator
                       """;
                 foreach (var property in builderDefinition.Properties.OrderBy(property => property.Name))
                 {
-                    var propertyType = GetPropertyType(property);
+                    var propertyType = GetPropertyType(property.Type);
 
                     source += $$"""
                                 public {{builderDefinition.BuilderName}} With{{property.Name}}({{propertyType}} value)
@@ -95,15 +67,12 @@ public class BuilderGenerator : IIncrementalGenerator
                 sourceProductionContext.AddSource($"{builderDefinition.BuilderName}.g.cs", source);
                 return;
 
-                string GetPropertyType(BuilderDefinition.PropertyDefinition property)
+                string GetPropertyType(BuilderDefinition.TypeDefinition type)
                 {
-                    var propertyType =
-                        $"{property.TypeNamespace}.{property.Type}{(property.TypeIsNullable ? "?" : "")}";
+                    if (type.TypeArguments.Length > 0)
+                        return $"{type.FullName}<{string.Join(", ", type.TypeArguments.Select(GetPropertyType))}>";
 
-                    if (property.IsEnumerable)
-                        return $"{property.EnumerableType}<{propertyType}>";
-
-                    return propertyType;
+                    return type.FullName;
                 }
             });
     }
