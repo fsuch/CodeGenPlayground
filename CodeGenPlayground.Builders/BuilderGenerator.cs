@@ -9,11 +9,15 @@ namespace CodeGenPlayground.Builders;
 [Generator]
 public class BuilderGenerator : IIncrementalGenerator
 {
+    private const string BuilderClassSuffix = "Builder";
+    private const string BuilderNamespace = "CodeGenPlayground.Builders";
+    private const string BuilderClassName = "BuilderBase";
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var valueProvider = context.SyntaxProvider
             .CreateSyntaxProvider(
-                static (node, _) => node is ClassDeclarationSyntax,
+                static (node, _) => node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.Identifier.Text.EndsWith(BuilderClassSuffix),
                 (generatorSyntaxContext, _) =>
                 {
                     var classDeclarationSyntax = (ClassDeclarationSyntax)generatorSyntaxContext.Node;
@@ -22,7 +26,7 @@ public class BuilderGenerator : IIncrementalGenerator
                     if (!builderClass.IsPartialClass())
                         return null;
 
-                    var builderBaseClass = builderClass.GetBuilderBaseClassSymbol();
+                    var builderBaseClass = builderClass.GetBaseClassSymbol(BuilderNamespace, BuilderClassName);
                     if (builderBaseClass == null)
                         return null;
 
